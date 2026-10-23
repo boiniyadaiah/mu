@@ -1,0 +1,33 @@
+name: Build PrajaNestham AAB
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Unzip Project
+        run: |
+          unzip -o "Praja Nestham shots - Google Play package.zip" -d extracted || true
+          ls -R extracted | head -n 100
+          
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Find and Build
+        run: |
+          find . -type f -name "gradlew" -exec chmod +x {} \;
+          GRADLE_FILE=$(find . -type f -name "gradlew" | head -n 1)
+          echo "Found gradle at $GRADLE_FILE"
+          DIR=$(dirname "$GRADLE_FILE")
+          cd "$DIR"
+          ./gradlew bundleRelease
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: PrajaNestham-Final-AAB
+          path: "**/*.aab"
